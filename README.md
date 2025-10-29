@@ -26,14 +26,43 @@ pip install -r requirements.txt
 
 ### 2. Структура проекту
 
+
 ```
 src/
-  ├── auth/           # Модуль автентифікації
-  ├── certs/          # Сертифікати (ключі для JWT)
-  ├── database.py     # Підключення до БД
-  ├── config.py       # Конфігурація
-  └── main.py         # Головний файл FastAPI
-tests/                # Тести
+    ├── auth/                 # Модуль автентифікації
+    │    ├── dependencies.py  # Залежності автентифікації
+    │    ├── exceptions.py    # Кастомні виключення
+    │    ├── interfaces.py    # Абстрактні класи та інтерфейси
+    │    ├── models.py        # SQLAlchemy моделі
+    │    ├── repository.py    # Робота з БД
+    │    ├── router.py        # API endpoints
+    │    ├── schemas.py       # Pydantic моделі
+    │    └── service.py       # Бізнес логіка
+    │
+    │    #як добавити новий модуль
+    ├── module/              # Новий модуль
+    │    ├── dependencies.py  # Залежності модуля
+    │    ├── exceptions.py    # Кастомні виключення
+    │    ├── interfaces.py    # Абстрактні класи
+    │    ├── models.py        # SQLAlchemy моделі
+    │    ├── repository.py    # Робота з БД
+    │    ├── router.py        # API endpoints
+    │    ├── schemas.py       # Pydantic моделі
+    │    └── service.py       # Бізнес логіка
+    │
+    ├── certs/               # Сертифікати JWT
+    │    ├── jwt-private.pem
+    │    └── jwt-public.pem
+    │            # Ядро додатку
+    ├── config.py     # Конфігурація
+    ├── database.py   # Підключення до БД
+    ├── exceptions.py # Базові виключення
+    │
+    └── main.py           # Головний файл FastAPI
+    
+tests/                  # Тести
+.env #зміни оточення
+requirements.txt #файл з бібліотеками проекту
 ```
 
 ---
@@ -126,9 +155,3 @@ pytest
 * [FastAPI документація](https://fastapi.tiangolo.com/)
 * [SQLAlchemy ORM](https://docs.sqlalchemy.org/)
 * [JWT токени](https://jwt.io/)
-
----
-
-Якщо хочеш, можу зробити **версію README з додатковими порадами та шаблонами коду**, щоб люди відразу бачили приклад правильного роуту, моделі та використання Depends. Це сильно полегшить їм старт.
-
-Хочеш, щоб я таку версію зробив?
