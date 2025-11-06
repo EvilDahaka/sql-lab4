@@ -21,21 +21,12 @@ class AuthJWT(BaseModel):
     # access_token_expire_minutes: int = 3
 
 
-class S3Settings(BaseModel):
-    assecc_key: str = os.getenv("S3_LOGIN")
-    secret_key: str = os.getenv("S3_PASSWORD")
-    endpoint: str = os.getenv("S3_ENDPOINT")
-    bucket: str = os.getenv("S3_BUCKET")
-
-
 class Settings(BaseSettings):
     api_v1_prefix: str = "/api/v1"
 
     db: DbSettings = DbSettings()
 
     auth_jwt: AuthJWT = AuthJWT()
-
-    s3: S3Settings = S3Settings()
 
 
 settings = Settings()
