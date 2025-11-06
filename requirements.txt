@@ -1,10 +1,10 @@
 fastapi
 sqlalchemy
 uvicorn
-PyJWT
 pydantic_settings
 python-multipart
 passlib[bcrypt]
 pydantic[email]
 pytest
 asyncpg
+PyJWT[crypto]

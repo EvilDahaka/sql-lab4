@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+
 from typing import Any
 import jwt
 from config import settings
@@ -24,7 +25,7 @@ class JWTAuthCodec:
         expire_minutes: int | None = None,
     ):
         to_encodes = payload.copy()
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         if expire_minutes:
             expire = now + timedelta(minutes=expire_minutes)
         else:

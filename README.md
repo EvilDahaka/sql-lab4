@@ -9,10 +9,6 @@
 ### 1. Створення та налаштування проекту
 
 ```bash
-# Створіть директорію для проекту
-mkdir my-project
-cd my-project
-
 # Створіть віртуальне оточення
 python -m venv venv
 source venv/bin/activate   # Linux/macOS
