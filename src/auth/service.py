@@ -1,9 +1,9 @@
-from database import get_session
-from auth.models import UserORM
-from auth.schemas import TokenSchemas, UserLogin, UserRegister, UserResponce
-from interface import IUnitOfWork
-from auth.auth import JWTAuthCodec, get_jwt_codec
-from unit_of_work import get_unit_of_work
+from src.database import get_session
+from src.auth.models import UserORM
+from src.auth.schemas import TokenSchemas, UserLogin, UserRegister, UserResponce
+from src.interface import IUnitOfWork
+from src.auth.auth import JWTAuthCodec, get_jwt_codec
+from src.unit_of_work import get_unit_of_work
 
 
 class UserService:
@@ -38,7 +38,6 @@ class UserService:
             except ValueError:
                 await work.rollback()
                 raise ValueError("User with this email already exists.")
-                
 
     async def get(self, user_id: int):
         async with self.uow as work:

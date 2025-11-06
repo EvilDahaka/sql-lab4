@@ -2,7 +2,7 @@ import logging
 from fastapi import FastAPI
 
 # from auth.router import router
-from utils import load_routers
+from src.utils import load_routers
 
 log = logging.getLogger(__name__)
 

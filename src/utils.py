@@ -20,7 +20,7 @@ def load_routers():
         # only consider directories that contain the router file
         if package_path.is_dir() and file_path.exists():
             # module name should be like '<package>.router' (e.g. 'modpack.router')
-            module_name = f"{file}.router"
+            module_name = f"src.{file}.router"
             try:
                 module = importlib.import_module(module_name)
                 router.include_router(module.router)

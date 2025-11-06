@@ -1,7 +1,7 @@
-from auth.repository import UserRepositoryORM
-from interface import IUnitOfWork
+from src.auth.repository import UserRepositoryORM
+from src.interface import IUnitOfWork
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
-from database import new_async_session
+from src.database import new_async_session
 
 
 class SqlAlchemyUnitOfWork(IUnitOfWork):

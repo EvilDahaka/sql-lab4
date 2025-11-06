@@ -1,8 +1,9 @@
 from sqlalchemy import select
-from repository import RepositoryORM, execute
-from auth.models import UserORM
+from src.repository import RepositoryORM, execute
+from src.auth.models import UserORM
 
-from auth.interface import IUserRepository
+from src.auth.interface import IUserRepository
+
 
 class UserRepositoryORM(RepositoryORM, IUserRepository):
     model = UserORM

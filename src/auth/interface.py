@@ -1,4 +1,4 @@
-from interface import IRepository
+from src.interface import IRepository
 
 
 class IUserRepository(IRepository):

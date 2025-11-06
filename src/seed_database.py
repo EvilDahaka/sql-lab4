@@ -1,5 +1,5 @@
-from database import Base, engine
-from auth.models import *
+from src.database import Base, engine
+from src.auth.models import *
 
 
 async def main():

@@ -3,8 +3,8 @@ from sqlalchemy import delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import StatementError, IntegrityError
 
-from database import Base
-from interface import T, IRepository
+from src.database import Base
+from src.interface import T, IRepository
 
 
 def execute(func: Callable):

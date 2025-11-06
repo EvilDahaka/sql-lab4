@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
-from auth.dependencies import UserServiceDep
-from auth.schemas import UserLogin, UserRegister, UserResponce, TokenSchemas
+from src.auth.dependencies import UserServiceDep
+from src.auth.schemas import UserLogin, UserRegister, UserResponce, TokenSchemas
 
 router = APIRouter(tags=["users"])
 
@@ -18,7 +18,9 @@ async def reg_user(data: UserRegister, user_service: UserServiceDep) -> TokenSch
     try:
         user = await user_service.register(data)
         if not user:
-            raise HTTPException(status_code=400, detail="Користувача з такой поштой існує")
+            raise HTTPException(
+                status_code=400, detail="Користувача з такой поштой існує"
+            )
         return user
     except ValueError:
         raise HTTPException(status_code=400, detail="Користувача з такой поштой існує")
