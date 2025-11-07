@@ -116,6 +116,23 @@ uvicorn src.main:app --reload
 
 > Сервер буде доступний на `http://127.0.0.1:8000`.
 
+## Запуск проекту через Docker compose
+
+### ініцілізація (перший запуск)
+```bash
+docker compose up --build db
+python3 -m src.seed_database
+docker compose stop
+docker compose build
+```
+### простий запус після ініцілізації 
+```bash
+docker compose up
+```
+
+
+> Сервер буде доступний на `http://127.0.0.1:8000`.
+
 ---
 
 ## Тестування
