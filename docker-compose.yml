@@ -31,7 +31,9 @@ services:
     networks:
       - dev
     ports:
-      - ${POSTGRES_PORT}
+      - "5432:5432"
+    #для приєднабази даних через pgadmin
+    #command: postgres -c listen_addresses='*'
 
 volumes:
   db_data:
