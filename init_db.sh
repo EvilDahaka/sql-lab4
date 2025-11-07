@@ -18,4 +18,4 @@ docker compose run --rm app python3 -m src.seed_database
 echo "Database initialized!"
 
 # Перезапуск сервісів
-docker compose restart
+docker compose stop db
