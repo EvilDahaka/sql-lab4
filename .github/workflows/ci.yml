@@ -24,3 +24,8 @@ jobs:
       - name: Run tests inside app container
         run: |
           docker compose run --rm app pytest -v --disable-warnings
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: app_db
+          DATABASE_URI: postgresql+asyncpg://postgres:postgres@db:5432/app_db
