@@ -1,9 +1,18 @@
+# Базовий образ з Python
 FROM python:3.12-slim
 
-WORKDIR /src
+# Встановлюємо робочу директорію
+WORKDIR /
 
-RUN pip install --no-cache-dir fastapi
+# Копіюємо requirements та встановлюємо залежності
+COPY requirements.txt requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . /src
+# Копіюємо весь проєкт в /src
+COPY . /src/
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
+# Встановлюємо PYTHONPATH, щоб Python бачив /src як корінь пакетів
+ENV PYTHONPATH=/src
+
+# Запускаємо FastAPI через uvicorn
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

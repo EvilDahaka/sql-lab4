@@ -8,8 +8,8 @@ load_dotenv()
 
 
 class DbSettings(BaseModel):
-    url: str = os.getenv("DATABASE_URL")
-    echo: bool = True
+    url: str = os.getenv("DATABASE_URI")
+    echo: bool = False
 
 
 class AuthJWT(BaseModel):

@@ -90,8 +90,13 @@ chmod 644 src/certs/jwt-public.pem
 Створіть файл `.env` у корені проекту:
 
 ```
-DATABASE_URL=sqlite:///./test.db   # або URL вашої БД
-SECRET_KEY=ваш_секретний_ключ
+DATABASE_URI=postgresql+asyncpg://user:password@db:5432/database
+
+POSTGRES_USER=user
+POSTGRES_PASSWORD=password
+POSTGRES_DB=database
+POSTGRES_PORT=5432
+
 ```
 
 > FastAPI використовує ці змінні для підключення до бази та генерації токенів.

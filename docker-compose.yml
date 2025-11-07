@@ -1,13 +1,7 @@
+networks:
+  dev:
+    driver: bridge
 services:
-  web:
-    image: nginx:latest
-    ports:
-      - "80:80"
-    volumes:
-      - ./html:/usr/share/nginx/html
-    depends_on:
-      - app
-
   app:
     image: fastapi-app:latest
     build:
@@ -16,13 +10,14 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - JWT_PRIVATE_KEY_PATH=${JWT_PRIVATE_KEY_PATH}
-      - JWT_PUBLIC_KEY_PATH=${JWT_PUBLIC_KEY_PATH}
-      - SECRET_KEY=${SECRET_KEY}
-      - OTHER_SECRET=${OTHER_SECRET}
+      - DATABASE_URI=${DATABASE_URI}
     depends_on:
       - db
+    volumes:
+      - ./src:/src
+    restart: always
+    networks:
+      - dev
 
   db:
     image: postgres:13
@@ -32,8 +27,11 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - db_data:/var/lib/postgresql/data
+
+    networks:
+      - dev
     ports:
-      - "5432:5432"
+      - ${POSTGRES_PORT}
 
 volumes:
   db_data:
