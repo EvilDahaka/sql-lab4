@@ -1,31 +1,62 @@
-name: FastAPI Docker CI
+name: FastAPI + Postgres CI
 
 on:
   push:
-    branches: [ "main","dev" ]
+    branches: [ "main", "dev" ]
   pull_request:
-    branches: [ "main","dev" ]
+    branches: [ "main", "dev" ]
+
 jobs:
-  docker-compose-test:
+  test:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Docker Compose
+      - name: Set environment variables
         run: |
-          docker compose version || sudo apt-get update && sudo apt-get install -y docker-compose
+          echo "POSTGRES_USER=postgres" >> $GITHUB_ENV
+          echo "POSTGRES_PASSWORD=postgres" >> $GITHUB_ENV
+          echo "POSTGRES_DB=app_db" >> $GITHUB_ENV
+          echo "DATABASE_URI=postgresql+asyncpg://postgres:postgres@db:5432/app_db" >> $GITHUB_ENV
+
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y docker-compose
 
       - name: Build containers
-        run: |
-          docker compose build app
+        run: docker compose build
 
-      - name: Run tests inside app container
+      - name: Initialize JWT keys and DB
         run: |
-          docker compose run --rm app pytest -v --disable-warnings
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: app_db
-          DATABASE_URI: postgresql+asyncpg://postgres:postgres@db:5432/app_db
+          chmod +x init_jwt_key.sh init_db.sh
+          ./init_jwt_key.sh
+          ./init_db.sh
+
+      - name: Start PostgreSQL
+        run: docker compose up -d db
+
+      - name: Wait for PostgreSQL
+        run: |
+          echo "Waiting for PostgreSQL to be ready..."
+          for i in {1..15}; do
+            if docker exec $(docker ps -qf "name=db") pg_isready -U postgres; then
+              echo "PostgreSQL is ready!"
+              break
+            fi
+            echo "Still waiting ($i/15)..."
+            sleep 3
+          done
+
+      - name: Run tests inside app
+        run: docker compose run --rm app pytest -v --disable-warnings
+
+      - name: Show logs if failed
+        if: failure()
+        run: |
+          echo "===== APP LOGS ====="
+          docker compose logs app || true
+          echo "===== DB LOGS ====="
+          docker compose logs db || true
