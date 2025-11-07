@@ -78,7 +78,7 @@ openssl rsa -in src/certs/jwt-private.pem -pubout -out src/certs/jwt-public.pem
 
 # Права доступу
 chmod 600 src/certs/jwt-private.pem
-chmod 644 src/certs/jwt-public.pem
+chmod 644 src/certs/jwt-public.pem 
 ```
 
 > ⚠️ Не додавайте ці файли у git.
@@ -120,10 +120,8 @@ uvicorn src.main:app --reload
 
 ### ініцілізація (перший запуск)
 ```bash
-docker compose up --build db
-python3 -m src.seed_database
-docker compose stop
-docker compose build
+chmod +x init_db.sh
+sh init_db.sh
 ```
 ### простий запус після ініцілізації 
 ```bash
