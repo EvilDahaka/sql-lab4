@@ -1,12 +1,20 @@
+import logging
 from src.database import Base, engine
-from src.auth.models import *
+from src.utils import load_models
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
+log = logging.getLogger(__name__)
+
+load_models(Base)
 
 
 async def main():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
-    print("✅ Базу даних і таблиці створено успішно.")
+    log.info("✅ Базу даних і таблиці створено успішно.")
 
 
 if __name__ == "__main__":

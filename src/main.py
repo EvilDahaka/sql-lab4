@@ -7,9 +7,7 @@ from src.utils import load_routers
 log = logging.getLogger(__name__)
 
 app = FastAPI()
-routers = load_routers()
-if routers:
-    app.include_router(routers)
+load_routers(app)
 
 
 @app.get("/")

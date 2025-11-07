@@ -1,31 +1,55 @@
 # src/routes/__init__.py
+from collections.abc import Callable
+from functools import wraps
+import logging
 import os
+from types import ModuleType
+from typing import TypeVar
 from fastapi import APIRouter
 import importlib
 from pathlib import Path
-import logging
 
-log = logging.getLogger("fastapi")
+from src.database import Base
+
+log = logging.getLogger("uvicorn")
+
+T = TypeVar("T")
 
 
-FILENAME = "router.py"  # можна доповнювати через конфіг
+def load_files(name_model: str) -> Callable[[Callable[..., T]], Callable[..., T]]:
+    """
+    Декоратор для завантаження файлів і виклику функції для кожного модуля.
+    """
+
+    def decorator(func: Callable[..., T]) -> Callable[..., T]:
+        @wraps(func)
+        def wrapper(obj: T, *args, **kwargs) -> T:
+            log.info(f"Start load {name_model}")
+            base_path = Path(__file__).parent
+            for folder in os.listdir(base_path):
+                package_path = base_path / folder
+                file_path = package_path / f"{name_model}.py"
+                if package_path.is_dir() and file_path.exists():
+                    module_path = f"src.{folder}.{name_model}"
+                    try:
+                        module = importlib.import_module(module_path)
+                        func(obj, module, *args, **kwargs)
+                        log.info(f"{name_model} {file_path} loaded")
+                    except Exception as e:
+                        log.exception(f"Failed to import {module_path}: {e}")
+            return obj
+
+        return wrapper
+
+    return decorator
 
 
-def load_routers():
-    log.info("start load router")
-    router = APIRouter()
-    for file in os.listdir(Path(__file__).parent):
-        package_path = Path(__file__).parent / file
-        file_path = package_path / FILENAME
-        # only consider directories that contain the router file
-        if package_path.is_dir() and file_path.exists():
-            # module name should be like '<package>.router' (e.g. 'modpack.router')
-            module_name = f"src.{file}.router"
-            try:
-                module = importlib.import_module(module_name)
-                router.include_router(module.router)
-                log.info(f"router {file_path} loaded")
-            except Exception as e:
-                log.exception(f"failed to import router module {module_name}: {e}")
-
+@load_files("router")
+def load_routers(router: APIRouter, module: ModuleType):
+    router.include_router(module.router)
     return router
+
+
+@load_files("models")
+def load_models(models: Base, module: ModuleType):
+    pass
