@@ -1,11 +1,11 @@
-from typing import Callable, TypeVar
-from sqlalchemy import delete, insert, select, update
+from typing import Any, Callable, TypeVar
+from sqlalchemy import Result, Select, Tuple, delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import StatementError, IntegrityError, SQLAlchemyError
 
 from src.database import Base
 from src.exceptions import IntegrityRepositoryError, InvalidQueryError, RepositoryError
-from src.filter import FilterHeadler, Op
+from src.filter import Filter, FilterHeadler, Op
 from src.interface import IRepository
 from typing import TypeVar, Generic
 
@@ -53,6 +53,7 @@ def repository(cls):
 
 
 T = TypeVar("T", bound=Base)
+M = TypeVar("M", bound=Base)
 
 
 @repository
@@ -64,12 +65,19 @@ class RepositoryORM(IRepository):
         self._filter = FilterHeadler(self.model)
 
     @execute
-    async def find(self, limit=None, offset=None, **_filter):
-        stmt = select(self.model).where(*self._filter(**_filter))
-        if offset is not None and limit is not None:
-            stmt = stmt.offset(offset).limit(limit)
+    async def find_all(
+        self, joins=None, limit=10, offset=0, _filter: Filter = Filter(), **filters
+    ):
+        stmt = await self.__find(joins=joins, _filter=_filter, filters=filters)
+        stmt = stmt.offset(offset).limit(limit)
         res = await self.session.execute(stmt)
-        return res.scalars().all() if limit else res.scalar_one_or_none()
+        return res.scalars().all()
+
+    @execute
+    async def find(self, joins=None, _filter: Filter = Filter(), **filters):
+        stmt = await self.__find(joins=joins, _filter=_filter, filters=filters)
+        res = await self.session.execute(stmt)
+        return res.scalar_one_or_none()
 
     @execute
     @overload_response
@@ -94,3 +102,20 @@ class RepositoryORM(IRepository):
         stmt = delete(self.model).where(*self._filter(**filters)).returning(self.model)
         res = await self.session.execute(stmt)
         return res.scalar().all()
+
+    async def __find(
+        self, joins: set[type[M]], _filter: Filter, filters: dict[str, Any]
+    ) -> Select[Tuple]:
+        stmt = select(self.model)
+        if joins:
+            for j in joins:
+                stmt = stmt.join(j)
+        f = self._resolve_filter(_filter, filters)
+        stmt = stmt.where(*f)
+        return stmt
+
+    def _resolve_filter(self, _filter: Filter, _filters: dict) -> list[Callable]:
+        if not isinstance(_filter, Filter):
+            raise TypeError(f"_filter must be Filter, not {type(_filter)}")
+        _filter.overload(**_filters)
+        return self._filter.to_conditions(_filter)
