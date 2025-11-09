@@ -29,9 +29,9 @@ def overload_response(func: Callable):
         if len(args) == 1:
             return await func(*args, **kwargs)  # один аргумент → повертаємо одразу
         else:
-            return await func(
-                list(args), **kwargs
-            )  # декілька аргументів → передаємо список
+            return [
+                func(arg, **kwargs) for arg in args
+            ]  # декілька аргументів → передаємо список
 
     return wrapper
 
