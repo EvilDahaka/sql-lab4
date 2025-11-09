@@ -1,6 +1,9 @@
+from src.auth.exceptions import UserRegistrationError
 from src.database import get_session
 from src.auth.models import UserORM
 from src.auth.schemas import TokenSchemas, UserLogin, UserRegister, UserResponce
+from src.exceptions import IntegrityRepositoryError
+from src.filter import eq
 from src.interface import IUnitOfWork
 from src.auth.auth import JWTAuthCodec, get_jwt_codec
 from src.unit_of_work import get_unit_of_work
@@ -18,9 +21,7 @@ class UserService:
 
             # TODO хешування пароля
             hashed_password = user_login.password
-
-            user = await work.users.find_email(user_login.email)
-
+            user = await work.rf(UserORM).find(email=eq(user_login.email))
             if not user or user.password != hashed_password:
                 return
 
@@ -32,23 +33,24 @@ class UserService:
             hashed_password = user.password
             user.password = hashed_password
             try:
-                new_user_id = await work.users.add(user.model_dump())
+                user = await work.rf(UserORM).add(entity=user.model_dump())
                 await work.commit()
-                return self.__genarate_token(new_user_id)
-            except ValueError:
+                return self.__genarate_token(user.id)
+            except IntegrityRepositoryError:
                 await work.rollback()
-                raise ValueError("User with this email already exists.")
+                raise UserRegistrationError("It email is register")
 
     async def get(self, user_id: int):
         async with self.uow as work:
-            user = await work.users.get(user_id)
+
+            user = await work.rf(UserORM).find(id=eq(user_id))
             if not user:
                 return
             return self.__user_responce(user)
 
     async def delele(self, user_id: int):
         async with self.uow as work:
-            await work.users.delete(user_id)
+            await work.rf(UserORM).delete(id=eq(user_id))
 
     def __genarate_token(self, _id: int):
         token = self.codec.encode({"uid": _id})

@@ -1,58 +1,42 @@
-from typing import Generic, Protocol, Self, overload, TypeVar
-from typing import TYPE_CHECKING
+from typing import Any, Generic, Protocol, TypeVar, Sequence, overload
+from pydantic import BaseModel
 
-if TYPE_CHECKING:
-    from src.auth.interface import IUserRepository
+from src.filter import Op
 
-T = TypeVar("T")
+T = TypeVar("T", bound=BaseModel)
 
 
-class IRepository(Protocol):
-    @overload
-    async def add(self, entity: dict) -> int:
-        pass
+class IRepository(Protocol[T]):
 
-    @overload
-    async def get(self, _id: int) -> dict:
-        pass
+    model: type[T]
+
+    def __call__(self, model: type) -> "IRepository":
+        """Створює конкретний репозиторій для моделі."""
+        ...
 
     @overload
-    async def update(self, entity: dict) -> None:
-        pass
+    async def add(self, entity: dict) -> T: ...
+    @overload
+    async def add(self, *entities: dict) -> Sequence[T]: ...
 
     @overload
-    async def delete(self, _id: int) -> None:
-        pass
+    async def find(self, limit: int, offset: int, **filters: Any) -> Sequence[T]: ...
+    @overload
+    async def find(self, **filters: Any) -> T | None: ...
 
     @overload
-    async def add(self, *entity: dict) -> list[int]:
-        pass
+    async def update(self, *entities: dict, **filters) -> Sequence[T]: ...
 
     @overload
-    async def get(self, *_id: int) -> list[dict]:
-        pass
-
-    @overload
-    async def update(self, *entity: dict) -> None:
-        pass
-
-    @overload
-    async def delete(self, *_id: int) -> None:
-        pass
+    async def delete(self, **filter) -> Sequence[T]: ...
 
 
 class IUnitOfWork(Protocol):
 
-    users: "IUserRepository"
+    rf: IRepository[Any]
 
-    async def __aenter__(self) -> "IUnitOfWork":
-        pass
+    async def __aenter__(self) -> "IUnitOfWork": ...
+    async def __aexit__(self, *args) -> None: ...
 
-    async def __aexit__(self, *args):
-        pass
-
-    async def commit(self):
-        pass
-
-    async def rollback(self):
-        pass
+    async def commit(self) -> None: ...
+    async def rollback(self) -> None: ...
