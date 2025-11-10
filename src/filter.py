@@ -1,7 +1,7 @@
 import logging
-from typing import Any, Callable, TypeVar, Union, get_type_hints
-from sqlalchemy import Column
-from sqlalchemy.orm import Mapped
+from typing import Any, Callable, TypeVar, Union, get_type_hints, Sized, Tuple
+from sqlalchemy import Column, func
+from datetime import datetime
 
 from src.database import Base
 
@@ -56,17 +56,31 @@ def op_factory(operator, annotations=Any):
     return wrapper
 
 
-NUM = Union[float, int]
-MASIVE = Union[set, list]
+TYPE_BEING_COMPARED = Union[float, int, datetime, str]
+MASIVE = Union[set, list, tuple]
 
 eq = op_factory(lambda col, val: col == val)
 neq = op_factory(lambda col, val: col != val)
-gt = op_factory(lambda col, val: col > val, NUM)
-lt = op_factory(lambda col, val: col < val, NUM)
-gte = op_factory(lambda col, val: col >= val, NUM)
-lte = op_factory(lambda col, val: col <= val, NUM)
-like = op_factory(lambda col, val: col.like(val))  # LIKE (пошук за зразком)
+gt = op_factory(lambda col, val: col > val, TYPE_BEING_COMPARED)
+lt = op_factory(lambda col, val: col < val, TYPE_BEING_COMPARED)
+gte = op_factory(lambda col, val: col >= val, TYPE_BEING_COMPARED)
+lte = op_factory(lambda col, val: col <= val, TYPE_BEING_COMPARED)
+like = op_factory(lambda col, val: col.like(val), str)  # LIKE (пошук за зразком)
 in_ = op_factory(lambda col, val: col.in_(val), MASIVE)  # IN (входить у список)
+# не протестовані
+between = op_factory(
+    lambda col, val: col.between(val[0], val[1]),
+    Tuple[TYPE_BEING_COMPARED, TYPE_BEING_COMPARED],
+)
+starts_with = op_factory(lambda col, val: col.like(f"{val}%"), str)
+ends_with = op_factory(lambda col, val: col.like(f"%{val}"), str)
+contains = op_factory(lambda col, val: col.like(f"%{val}%"), str)
+not_like = op_factory(lambda col, val: ~col.like(val), str)
+len_gt = op_factory(lambda col, val: func.length(col) > val, Sized)
+len_lt = op_factory(lambda col, val: func.length(col) < val, Sized)
+len_gte = op_factory(lambda col, val: func.length(col) >= val, Sized)
+len_lte = op_factory(lambda col, val: func.length(col) <= val, Sized)
+len_eq = op_factory(lambda col, val: func.length(col) == val, Sized)
 
 
 class Filter:
