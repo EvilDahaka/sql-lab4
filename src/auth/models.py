@@ -5,8 +5,6 @@ from src.database import Base
 
 class UserORM(Base):
     __tablename__ = "users"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     nickname: Mapped[str]
     email: Mapped[str] = mapped_column(unique=True)
     password: Mapped[str]
