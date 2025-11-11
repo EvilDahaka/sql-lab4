@@ -59,8 +59,8 @@ def op_factory(operator, annotations=Any):
 TYPE_BEING_COMPARED = Union[float, int, datetime, str]
 MASIVE = Union[set, list, tuple]
 
-eq = op_factory(lambda col, val: col == val)
-neq = op_factory(lambda col, val: col != val)
+eq = op_factory(lambda col, val: col == val, Any)
+neq = op_factory(lambda col, val: col != val, Any)
 gt = op_factory(lambda col, val: col > val, TYPE_BEING_COMPARED)
 lt = op_factory(lambda col, val: col < val, TYPE_BEING_COMPARED)
 gte = op_factory(lambda col, val: col >= val, TYPE_BEING_COMPARED)
@@ -100,7 +100,7 @@ class Filter:
         setattr(self, field, value)
 
     def __add_value(self, field: str, value: Any):
-        operator = getattr(self.__class__, field, eq())  # беремо оператор або eq
+        operator = getattr(self.__class__, field, None) or eq()
         # якщо оператор — це функція з _operator_symbol, то викликаємо її
         if isinstance(operator, Op):
             operator.value = value

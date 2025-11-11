@@ -1,40 +1,28 @@
 from typing import Any, Generic, Protocol, TypeVar, Sequence, overload
 from pydantic import BaseModel
 
-from src.filter import Op
+from src.filter import Filter, Op
 
 T = TypeVar("T", bound=BaseModel)
 
 
-class IRepository(Protocol[T]):
-
+class IRepository(Generic[T], Protocol):
     model: type[T]
 
-    def __call__(self, model: type) -> "IRepository":
-        """Створює конкретний репозиторій для моделі."""
-        ...
+    async def add(self, data) -> T: ...
 
-    @overload
-    async def add(self, entity: dict) -> T: ...
-    @overload
-    async def add(self, *entities: dict) -> Sequence[T]: ...
+    async def find(self, filter: Filter = Filter(), **filters: Op) -> T | None: ...
 
-    @overload
-    async def find(self, limit: int, offset: int, **filters: Any) -> Sequence[T]: ...
-    @overload
-    async def find(self, **filters: Any) -> T | None: ...
+    async def find_all(
+        self, offset: int = 0, limit: int = 10, filter: Filter = Filter(), **filters: Op
+    ) -> list[T]: ...
 
-    @overload
-    async def update(self, *entities: dict, **filters) -> Sequence[T]: ...
+    async def update(self, _id: int, data) -> T: ...
 
-    @overload
-    async def delete(self, **filter) -> Sequence[T]: ...
+    async def delete(self, _id: int) -> T | None: ...
 
 
 class IUnitOfWork(Protocol):
-
-    rf: IRepository[Any]
-
     async def __aenter__(self) -> "IUnitOfWork": ...
     async def __aexit__(self, *args) -> None: ...
 

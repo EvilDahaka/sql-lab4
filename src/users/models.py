@@ -2,7 +2,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String
 from src.auth.models import RefreshTokenORM
 from src.database import Base
+from src.events.models import EventORM
 from src.mixin_models import CreatedAtMixin
+from sqlalchemy import Boolean, text
 
 
 class UserORM(Base, CreatedAtMixin):
@@ -10,9 +12,13 @@ class UserORM(Base, CreatedAtMixin):
     username: Mapped[str]
     email: Mapped[str] = mapped_column(String(255), unique=True)
     password: Mapped[str]
-    is_active: Mapped[bool] = mapped_column(default=True)
-    is_admin: Mapped[bool] = mapped_column(default=False)
+
+    is_active: Mapped[bool] = mapped_column(Boolean, server_default=text("true"))
+    is_admin: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
 
     tokens: Mapped[list["RefreshTokenORM"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
+    )
+    events: Mapped[list["EventORM"]] = relationship(
+        back_populates="owner", cascade="all, delete-orphan"
     )
