@@ -5,7 +5,7 @@ from src.interface import ICreatedAt, IRepository
 
 T = TypeVar("T") 
 
-class IRefreshToken(Protocol,ICreatedAt):
+class IRefreshToken(ICreatedAt,Protocol):
     id:int
     token:str
     user_id:int

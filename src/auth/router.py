@@ -4,7 +4,7 @@ from src.auth.exceptions import InvalidRefreshToken, RegistrationError, LoginErr
 from src.auth.schemas import UserRegister, UserLogin, TokenSchemas, LoginResponce
 from src.auth.dependencies import AuthServiceDep
 
-router = APIRouter("/auth",tags=['Auth']) # type: ignore[misc]
+router = APIRouter(prefix="/auth",tags=['Auth']) # type: ignore[misc]
 
 def check_invalid_refresh_token(func): 
     @wraps(func) 

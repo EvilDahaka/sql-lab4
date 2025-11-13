@@ -1,10 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field, FileUrl
-
-
-class User(BaseModel):
-    nickname: str = Field(min_length=3, max_length=20)
-
+from src.users.schemas import User
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -14,9 +10,6 @@ class UserLogin(BaseModel):
 class UserRegister(User, UserLogin):
     pass
 
-class LoginResponce:
-    access_token:str
-    refresh_token:str
 
 class UserResponce(User):
     id: int = Field(ge=0)
@@ -31,9 +24,12 @@ class TokenCreate(BaseModel):
     sub:int
     username:str
     email:EmailStr
-    is_admin:bool
+    is_admin:bool= Field(default=False)
     
 class TokenInfo(TokenCreate):
     iat:datetime
     exp:datetime
     
+class LoginResponce(BaseModel):
+    access_token:TokenSchemas
+    refresh_token:TokenSchemas

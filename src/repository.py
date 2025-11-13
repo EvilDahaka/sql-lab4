@@ -15,9 +15,9 @@ def execute(func: Callable):
         try:
             return await func(*args, **kwargs)
         except IntegrityError as e:
-            raise IntegrityRepositoryError("Integrity error during DB operation") from e
+            raise IntegrityRepositoryError(f"Integrity error during DB operation: {e}") from e
         except StatementError as e:
-            raise InvalidQueryError("Invalid query or filter") from e
+            raise InvalidQueryError(f"Invalid query or filter: {e}") from e
 
     return wrapper
 

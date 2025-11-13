@@ -1,19 +1,14 @@
+from jwt import InvalidTokenError
 from src.auth.exceptions import InvalidRefreshToken, LoginError, RegistrationError
-from src.auth.interface import IRefreshTokenRepository
-from src.auth.models import RefreshTokenORM
-from src.auth.repository import AuthUnitOfWork
-from src.database import get_session
-from src.users.interface import IUser, IUserRepository
-from src.users.models import UserORM
-from src.auth.schemas import LoginResponce, TokenCreate, TokenSchemas, UserLogin, UserRegister, UserResponce
-from src.exceptions import IntegrityRepositoryError, RepositoryError
+from src.users.interface import IUser
+from src.auth.schemas import LoginResponce, TokenCreate, TokenSchemas, UserLogin, UserRegister
+from src.exceptions import IntegrityRepositoryError
 from src.filter import eq
 from src.interface import IUnitOfWork
 from src.auth.jwt_codec import JWTAuthCodec, get_jwt_codec
 from src.unit_of_work import get_unit_of_work
-from typing import Type
 
-from src.users.repository import UserRepository
+
 
 
 class AuthService:
@@ -33,7 +28,7 @@ class AuthService:
             user = await work.users.find(email=eq(user_login.email))
             if not user or user.password != hashed_password:
                 raise LoginError("Uncorrect password")
-            return self.__genarate_tokens(user,work)
+            return await self.__genarate_tokens(user,work)
 
     async def register(self, user_data: UserRegister):
         async with self.uow as work:
@@ -42,27 +37,45 @@ class AuthService:
             user_data.password = hashed_password
             try:
                 user = await work.users.add(user_data.model_dump())
-                await work.commit()
-                return self.__genarate_tokens(user,work)
+                return await self.__genarate_tokens(user,work)
             except IntegrityRepositoryError:
-                await work.rollback()
                 raise RegistrationError("It email is register")
             
     async def refresh(self,refresh_token:str):
         async with self.uow as work:
-            token_info = self.codec.decode(refresh_token)
             token = await work.refresh_tokens.find(token=eq(refresh_token))
+            
+            if not token:
+                raise InvalidRefreshToken("token invalid ")
             if token.revoked: # type: ignore
                 raise InvalidRefreshToken("Token revoked")
-            user = await work.users.find(id=eq(token.id)) # type: ignore
+            user = await work.users.find(id=eq(token.user_id)) 
+            await work.commit()# type: ignore
             if user.is_active: # type: ignore
+                self.checking_invalid_token(refresh_token)
                 return self.__genarate_token(user)
             raise InvalidRefreshToken("User is ban")
+        
+    async def logout(self,refresh_token:str):
+        self.checking_invalid_token(refresh_token)
+        async with self.uow as work:
+            token = await work.refresh_tokens.find(token=eq(refresh_token))
+            if token:
+                if token.revoked == False:
+                    await work.refresh_tokens.update(token.id,{"revoked":True})
+                    return
+            raise InvalidRefreshToken()
+                
+    def checking_invalid_token(self,refresh_token):
+        try:
+            token_info = self.codec.decode(refresh_token)
+        except InvalidTokenError:
+                InvalidRefreshToken("token invalid ")
             
     async def __genarate_tokens(self,user:IUser,work:IUnitOfWork):
         refresh_token = self.__genarate_token(user,expire_minutes=7*24*60)
         access_token = self.__genarate_token(user)
-        await work.refresh_tokens.add({"token":refresh_token,"user_id":user.id})
+        await work.refresh_tokens.add({"token":refresh_token.token,"user_id":user.id})
         return LoginResponce(
             access_token=access_token,
             refresh_token=refresh_token

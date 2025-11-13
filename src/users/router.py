@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Annotated
-from src.auth.dependencies import AuthUserDep
+# from src.auth.dependencies import AuthUserDep
 
 router = APIRouter(prefix="/users")
 
@@ -17,6 +17,6 @@ def get(creds: HTTPAuthorizationCredentials = Depends(http_bearer)):
     raise HTTPException(status_code=401, detail="not auth")
 
 
-@router.get("/me")
-async def get_me(payload: AuthUserDep):
-    return payload
+# @router.get("/me")
+# async def get_me(payload: AuthUserDep):
+#     return payload

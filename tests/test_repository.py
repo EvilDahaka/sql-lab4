@@ -17,7 +17,6 @@ async def test_repository():
         # Додаємо запис
         data = {"username": "test", "password": "12345678", "email": "test@test.com"}
         instance = await repo.add(data)
-        await work.commit()
         assert instance.username == "test"
 
         # Знаходимо запис
@@ -26,12 +25,10 @@ async def test_repository():
 
         # Оновлюємо запис
         updated = await repo.update(_id=instance.id, data={"username": "updated"})
-        await work.commit()
         assert updated.username == "updated"
 
         # Видаляємо запис
         deleted = await repo.delete(_id=instance.id)
-        await work.commit()
         assert deleted.id == instance.id
 
         # Перевіряємо find_all
