@@ -5,12 +5,13 @@ from .service import EventService
 from .exceptions import EventNotFoundError, EventPermissionError 
 from .dependencies import EventServiceDep 
 from src.auth.dependencies import get_current_user 
-from src.auth.schemas import UserRead as CurrentUser 
+#from src.auth.schemas import UserResponce as CurrentUser 
+from src.auth.schemas import UserResponce
+
 
 router = APIRouter(
     prefix="/events",
     tags=["Events"],
-
 )
 
 @router.post(
@@ -21,10 +22,12 @@ router = APIRouter(
 )
 async def create_event(
     event_data: EventCreate,
-    event_service: EventServiceDep = Depends(),
-    current_user: CurrentUser = Depends(get_current_user)):
+    # ВИПРАВЛЕНО: Видалено '= Depends()'
+    event_service: EventServiceDep, 
+    current_user: UserResponce = Depends(get_current_user)):
 
-    new_event = await event_service.create(event_data, current_user.id)
+    # ВИПРАВЛЕНО: Змінено метод з 'create' на 'create_event' (як у service.py)
+    new_event = await event_service.create_event(event_data, current_user.id)
     return new_event
 
 @router.get(
@@ -34,6 +37,7 @@ async def create_event(
 )
 async def get_event(
     event_id: int,
+    # ВИПРАВЛЕНО: Видалено '= Depends()'
     service: EventServiceDep,
 ):
     try:
@@ -51,6 +55,7 @@ async def get_event(
     summary="Отримати список усіх подій",
 )
 async def get_all_events(
+    # ВИПРАВЛЕНО: Видалено '= Depends()'
     service: EventServiceDep,
 ):
     """Повертає список усіх подій, доступних у системі."""
@@ -65,8 +70,9 @@ async def get_all_events(
 async def update_event(
     event_id: int,
     update_data: EventUpdate,
+    # ВИПРАВЛЕНО: Видалено '= Depends()'
     service: EventServiceDep,
-    current_user: CurrentUser = Depends(get_current_user),
+    current_user: UserResponce = Depends(get_current_user),
 ):
     """
     Оновлює подію. Дозволено лише власнику події.
@@ -96,8 +102,9 @@ async def update_event(
 )
 async def delete_event(
     event_id: int,
+    # ВИПРАВЛЕНО: Видалено '= Depends()'
     service: EventServiceDep,
-    current_user: CurrentUser = Depends(get_current_user),
+    current_user: UserResponce = Depends(get_current_user),
 ):
     """
     Видаляє подію. Дозволено лише власнику події.
@@ -120,4 +127,3 @@ async def delete_event(
 
     # При успішному видаленні повертаємо 204 No Content
     return
-

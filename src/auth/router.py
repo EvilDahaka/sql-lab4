@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from src.auth.dependencies import UserServiceDep
 from src.auth.exceptions import UserRegistrationError
 from src.auth.schemas import UserLogin, UserRegister, UserResponce, TokenSchemas
+from fastapi.security import OAuth2PasswordRequestForm
 
 router = APIRouter(tags=["users"])
 
@@ -26,10 +27,32 @@ async def reg_user(data: UserRegister, user_service: UserServiceDep) -> TokenSch
     except UserRegistrationError:
         raise HTTPException(status_code=400, detail="Користувача з такой поштой існує")
 
-
+'''
 @router.post("/login")
 async def login(user: UserLogin, user_servise: UserServiceDep) -> TokenSchemas:
     token = await user_servise.login(user)
+    if not token:
+        raise HTTPException(400, "Невірний логін чи пароль")
+    return token
+'''
+
+
+
+@router.post("/login")
+async def login(
+    user_servise: UserServiceDep, 
+    form_data: OAuth2PasswordRequestForm = Depends()
+) -> TokenSchemas:
+    
+    
+    user_data = UserLogin(
+        email=form_data.username,
+        password=form_data.password
+    )
+    
+   
+    token = await user_servise.login(user_data) 
+    
     if not token:
         raise HTTPException(400, "Невірний логін чи пароль")
     return token
