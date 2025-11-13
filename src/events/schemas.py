@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional
 
-from src.mixin_schemas import CreateAtMixin
+from src.mixin_schemas import CreatedAtMixin
 
 
 class EventBase(BaseModel):
@@ -32,7 +32,7 @@ class EventUpdate(EventBase):
     end_time: Optional[datetime] = Field(None)
 
 
-class EventResponse(EventBase, CreateAtMixin):
+class EventResponse(EventBase, CreatedAtMixin):
     id: int
     owner_id: int
 

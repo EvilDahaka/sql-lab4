@@ -1,4 +1,3 @@
-# src/routes/__init__.py
 from collections.abc import Callable
 from functools import wraps
 import logging
@@ -9,18 +8,12 @@ from fastapi import APIRouter
 import importlib
 from pathlib import Path
 
-from src.database import Base
-
 log = logging.getLogger("uvicorn")
 
 T = TypeVar("T")
 
 
 def load_files(name_model: str) -> Callable[[Callable[..., T]], Callable[..., T]]:
-    """
-    Декоратор для завантаження файлів і виклику функції для кожного модуля.
-    """
-
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @wraps(func)
         def wrapper(obj: T, *args, **kwargs) -> T:
@@ -48,8 +41,3 @@ def load_files(name_model: str) -> Callable[[Callable[..., T]], Callable[..., T]
 def load_routers(router: APIRouter, module: ModuleType):
     router.include_router(module.router)
     return router
-
-
-@load_files("models")
-def load_models(models: Base, module: ModuleType):
-    pass
