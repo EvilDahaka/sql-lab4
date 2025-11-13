@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field, FileUrl
 
 
@@ -13,13 +14,26 @@ class UserLogin(BaseModel):
 class UserRegister(User, UserLogin):
     pass
 
+class LoginResponce:
+    access_token:str
+    refresh_token:str
 
 class UserResponce(User):
     id: int = Field(ge=0)
     email: EmailStr
-    image: FileUrl | None
 
 
 class TokenSchemas(BaseModel):
     token: str
     type_token: str = Field(default="Bearer")
+
+class TokenCreate(BaseModel):
+    sub:int
+    username:str
+    email:EmailStr
+    is_admin:bool
+    
+class TokenInfo(TokenCreate):
+    iat:datetime
+    exp:datetime
+    

@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 import jwt
 from src.auth.schemas import TokenCreate, TokenInfo
-from config import settings
+from src.config import settings
 
 
 class JWTAuthCodec:
