@@ -5,9 +5,14 @@ from src.auth.auth import get_jwt_codec
 from src.auth.schemas import UserResponce as CurrentUserSchema
 from .service import get_user_servise, UserService
 
+from fastapi import Depends
+
+from src.auth.interface import IAuthService
+from src.auth.service import get_user_servise
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login") 
 
+AuthServiceDep = Annotated[IAuthService, Depends(get_user_servise)]
 UserServiceDep = Annotated[UserService, Depends(get_user_servise)]
 
 
