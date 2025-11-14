@@ -9,3 +9,4 @@ pytest
 asyncpg
 PyJWT[crypto]
 aiosqlite
+pytest-asyncio
