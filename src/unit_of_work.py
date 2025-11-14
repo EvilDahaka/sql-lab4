@@ -1,10 +1,11 @@
 import logging
 from typing import TYPE_CHECKING
 from src.auth.models import RefreshTokenORM
+from src.events.models import EventORM
+from src.events.repository import EventRepository
 from src.interface import IUnitOfWork
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from src.database import new_async_session
-from src.repository import RepositoryORM
 
 from src.auth.repository import RefreshTokenRepository
 from src.users.models import UserORM
@@ -17,11 +18,13 @@ class SqlAlchemyUnitOfWork(IUnitOfWork):
         self.session_factory = session_factory
         self.users:UserRepository
         self.refresh_tokens:RefreshTokenRepository
+        self.events:EventRepository
 
     async def __aenter__(self):
         self.session: AsyncSession = self.session_factory()
         self.users= UserRepository(self.session,UserORM)
         self.refresh_tokens=RefreshTokenRepository(self.session,RefreshTokenORM)
+        self.events =EventRepository(self.session,EventORM)
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):

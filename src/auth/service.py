@@ -71,10 +71,10 @@ class AuthService:
     def auth(self,token:str):
         try:
             
-            token = self.codec.decode(token)
-            if token.type != ACCESS_TOKEN:
+            token_info = self.codec.decode(token)
+            if token_info.type != ACCESS_TOKEN:
                 raise AuthenticationError("Is not access token")
-            return token
+            return token_info
         except InvalidTokenError:
             AuthenticationError("Invalid token")
         

@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey
 from src.database import get_base_class
+from src.mixin_models import CreatedAtMixin
 Base = get_base_class()
 from typing import TYPE_CHECKING
 from datetime import datetime
@@ -9,7 +10,7 @@ from datetime import datetime
 if TYPE_CHECKING:
     from src.auth.models import UserORM 
 
-class EventORM(Base):
+class EventORM(Base,CreatedAtMixin):
     __tablename__ = "events"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

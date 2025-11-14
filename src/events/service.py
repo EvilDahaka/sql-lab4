@@ -18,7 +18,7 @@ class EventService:
         async with self.uow as work:
             event_dict = event_data.model_dump()
             
-            new_event_orm = await work.rf(EventORM).add(
+            new_event_orm = await work.events.add(
                 entity={**event_dict, "owner_id": owner_id}
             )
             
@@ -32,7 +32,7 @@ class EventService:
         """Повертає одну подію за її ID."""
         
         async with self.uow as work:
-            event_orm = await work.rf(EventORM).find_one(id=eq(event_id))
+            event_orm = await work.events.find_one(id=eq(event_id))
             
             if not event_orm:
                 raise EventNotFoundError(f"Подію з ID {event_id} не знайдено.")
@@ -43,7 +43,7 @@ class EventService:
         """Повертає список усіх подій."""
         
         async with self.uow as work:
-            events_orm = await work.rf(EventORM).find_all()
+            events_orm = await work.events.find_all()
             
             return [EventResponse.model_validate(e) for e in events_orm]
 
@@ -53,7 +53,7 @@ class EventService:
         """Оновлює дані події після перевірки прав доступу."""
         
         async with self.uow as work:
-            event_orm = await work.rf(EventORM).find_one(id=eq(event_id))
+            event_orm = await work.events.find_one(id=eq(event_id))
             
             if not event_orm:
                 raise EventNotFoundError(f"Подію з ID {event_id} не знайдено.")
@@ -64,8 +64,8 @@ class EventService:
             
             update_dict = update_data.model_dump(exclude_unset=True) 
             
-            updated_event_orm = await work.rf(EventORM).update(
-                filters={"id": eq(event_id)},
+            updated_event_orm = await work.events.update(
+                _id=event_id,
                 values=update_dict
             )
 
@@ -82,7 +82,7 @@ class EventService:
         """Видаляє подію після перевірки прав доступу."""
         
         async with self.uow as work:
-            event_orm = await work.rf(EventORM).find_one(id=eq(event_id))
+            event_orm = await work.events.find_one(id=eq(event_id))
             
             if not event_orm:
                 raise EventNotFoundError(f"Подію з ID {event_id} не знайдено.")
@@ -91,7 +91,7 @@ class EventService:
             if event_orm.owner_id != current_user_id:
                 raise EventPermissionError("Ви можете видаляти лише власні події.")
             
-            rows_deleted = await work.rf(EventORM).delete(id=eq(event_id))
+            rows_deleted = await work.events.delete(_id=event_id)
             
             await work.commit()
 

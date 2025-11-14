@@ -6,6 +6,7 @@ from src.filter import Filter, Op
 if TYPE_CHECKING:
     from src.users.interface import IUserRepository
     from src.auth.interface import IRefreshTokenRepository
+    from src.events.interface import IEventRepository
 
 T = TypeVar("T")
 
@@ -32,6 +33,7 @@ class IUnitOfWork(Generic[T],Protocol):
     session:T
     users:"IUserRepository"
     refresh_tokens:"IRefreshTokenRepository"
+    events:"IEventRepository"
     async def __aenter__(self) -> "IUnitOfWork": ...
     async def __aexit__(self, *args) -> None: ...
 
