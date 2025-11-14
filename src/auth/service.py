@@ -1,7 +1,9 @@
+from fastapi import Depends
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import InvalidTokenError
-from src.auth.exceptions import InvalidRefreshToken, LoginError, RegistrationError
+from src.auth.exceptions import AuthenticationError, InvalidRefreshToken, LoginError, RegistrationError
 from src.users.interface import IUser
-from src.auth.schemas import LoginResponce, TokenCreate, TokenSchemas, UserLogin, UserRegister
+from src.auth.schemas import ACCESS_TOKEN, REFRESH_TOKEN, LoginResponce, TokenCreate, TokenSchemas, UserLogin, UserRegister
 from src.exceptions import IntegrityRepositoryError
 from src.filter import eq
 from src.interface import IUnitOfWork
@@ -65,6 +67,17 @@ class AuthService:
                     await work.refresh_tokens.update(token.id,{"revoked":True})
                     return
             raise InvalidRefreshToken()
+        
+    def auth(self,token:str):
+        try:
+            
+            token = self.codec.decode(token)
+            if token.type != ACCESS_TOKEN:
+                raise AuthenticationError("Is not access token")
+            return token
+        except InvalidTokenError:
+            AuthenticationError("Invalid token")
+        
                 
     def checking_invalid_token(self,refresh_token):
         try:
@@ -73,16 +86,17 @@ class AuthService:
                 InvalidRefreshToken("token invalid ")
             
     async def __genarate_tokens(self,user:IUser,work:IUnitOfWork):
-        refresh_token = self.__genarate_token(user,expire_minutes=7*24*60)
-        access_token = self.__genarate_token(user)
+        refresh_token = self.__genarate_token(user,type_=REFRESH_TOKEN,expire_minutes=7*24*60)
+        access_token = self.__genarate_token(user,type_=ACCESS_TOKEN)
         await work.refresh_tokens.add({"token":refresh_token.token,"user_id":user.id})
         return LoginResponce(
             access_token=access_token,
             refresh_token=refresh_token
         )
 
-    def __genarate_token(self, user:IUser,expire_minutes:int=15):
+    def __genarate_token(self, user:IUser,type_:str,expire_minutes:int=15,):
         payload = TokenCreate(
+                    type=type_,
                     sub=user.id,
                     username=user.username,
                     email=user.email,

@@ -4,9 +4,7 @@ from .schemas import EventCreate, EventResponse, EventUpdate
 from .service import EventService 
 from .exceptions import EventNotFoundError, EventPermissionError 
 from .dependencies import EventServiceDep 
-from src.auth.dependencies import get_current_user 
-#from src.auth.schemas import UserResponce as CurrentUser 
-from src.auth.schemas import UserResponce
+from src.auth.dependencies import AuthAdmin
 
 
 router = APIRouter(
@@ -24,10 +22,10 @@ async def create_event(
     event_data: EventCreate,
     # ВИПРАВЛЕНО: Видалено '= Depends()'
     event_service: EventServiceDep, 
-    current_user: UserResponce = Depends(get_current_user)):
+    current_user: AuthAdmin):
 
     # ВИПРАВЛЕНО: Змінено метод з 'create' на 'create_event' (як у service.py)
-    new_event = await event_service.create_event(event_data, current_user.id)
+    new_event = await event_service.create_event(event_data, current_user.sub)
     return new_event
 
 @router.get(
@@ -72,7 +70,7 @@ async def update_event(
     update_data: EventUpdate,
     # ВИПРАВЛЕНО: Видалено '= Depends()'
     service: EventServiceDep,
-    current_user: UserResponce = Depends(get_current_user),
+    current_user: AuthAdmin,
 ):
     """
     Оновлює подію. Дозволено лише власнику події.
@@ -81,7 +79,7 @@ async def update_event(
         return await service.update_event(
             event_id=event_id,
             update_data=update_data,
-            current_user_id=current_user.id
+            current_user_id=current_user.sub
         )
     except EventNotFoundError as e:
         raise HTTPException(
@@ -104,7 +102,7 @@ async def delete_event(
     event_id: int,
     # ВИПРАВЛЕНО: Видалено '= Depends()'
     service: EventServiceDep,
-    current_user: UserResponce = Depends(get_current_user),
+    current_user: AuthAdmin,
 ):
     """
     Видаляє подію. Дозволено лише власнику події.
@@ -112,7 +110,7 @@ async def delete_event(
     try:
         await service.delete_event(
             event_id=event_id,
-            current_user_id=current_user.id
+            current_user_id=current_user.sub
         )
     except EventNotFoundError as e:
         raise HTTPException(

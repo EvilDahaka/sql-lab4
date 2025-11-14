@@ -17,14 +17,3 @@ class RefreshTokenORM(Base, CreatedAtMixin):
     revoked: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
 
     user = relationship("UserORM", back_populates="tokens")
-class UserORM(Base):
-    __tablename__ = "users"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    nickname: Mapped[str]
-    email: Mapped[str] = mapped_column(unique=True)
-    password: Mapped[str]
-    image_url: Mapped[str] = mapped_column(nullable=True)
-
-    events: Mapped[List["EventORM"]] = relationship(back_populates="owner")
-    #events: Mapped[List["EventORM"]] = relationship()

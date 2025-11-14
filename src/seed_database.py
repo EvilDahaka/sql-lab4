@@ -1,13 +1,13 @@
 import logging
 from src.database import Base, engine
-from src.utils import load_files
+from src.load_models import load_all_orm_models
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 )
 log = logging.getLogger(__name__)
 
-load_files(Base)
+load_all_orm_models()
 
 
 async def main():

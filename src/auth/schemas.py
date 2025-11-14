@@ -1,6 +1,12 @@
 from datetime import datetime
+from enum import Enum
+from typing import Literal
 from pydantic import BaseModel, EmailStr, Field, FileUrl
 from src.users.schemas import User
+
+
+ACCESS_TOKEN = "access_token"
+REFRESH_TOKEN = "refresh_token"
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -21,6 +27,7 @@ class TokenSchemas(BaseModel):
     type_token: str = Field(default="Bearer")
 
 class TokenCreate(BaseModel):
+    type:str
     sub:int
     username:str
     email:EmailStr

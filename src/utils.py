@@ -8,6 +8,8 @@ from fastapi import APIRouter
 import importlib
 from pathlib import Path
 
+from src.database import Base
+
 log = logging.getLogger("uvicorn")
 
 T = TypeVar("T")
@@ -40,4 +42,8 @@ def load_files(name_model: str) -> Callable[[Callable[..., T]], Callable[..., T]
 @load_files("router")
 def load_routers(router: APIRouter, module: ModuleType):
     router.include_router(module.router)
-    return router
+    return 
+
+load_files("models")
+def load_models():
+    pass

@@ -3,13 +3,8 @@ from fastapi import APIRouter, HTTPException, Response, status
 from src.auth.exceptions import InvalidRefreshToken, RegistrationError, LoginError
 from src.auth.schemas import UserRegister, UserLogin, TokenSchemas, LoginResponce
 from src.auth.dependencies import AuthServiceDep
-from fastapi import APIRouter, HTTPException, Depends
-from src.auth.dependencies import UserServiceDep
-from src.auth.exceptions import UserRegistrationError
-from src.auth.schemas import UserLogin, UserRegister, UserResponce, TokenSchemas
-from fastapi.security import OAuth2PasswordRequestForm
 
-router = APIRouter(prefix="/auth",tags=['Auth']) # type: ignore[misc]
+router = APIRouter(prefix="/auth",tags=['Auth']) 
 
 def check_invalid_refresh_token(func): 
     @wraps(func) 
@@ -53,32 +48,3 @@ async def refresh_token(refresh_token: str, service: AuthServiceDep) -> TokenSch
 async def logout(refresh_token: str, service: AuthServiceDep):
     await service.logout(refresh_token)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-'''
-@router.post("/login")
-async def login(user: UserLogin, user_servise: UserServiceDep) -> TokenSchemas:
-    token = await user_servise.login(user)
-    if not token:
-        raise HTTPException(400, "Невірний логін чи пароль")
-    return token
-'''
-
-
-
-@router.post("/login")
-async def login(
-    user_servise: UserServiceDep, 
-    form_data: OAuth2PasswordRequestForm = Depends()
-) -> TokenSchemas:
-    
-    
-    user_data = UserLogin(
-        email=form_data.username,
-        password=form_data.password
-    )
-    
-   
-    token = await user_servise.login(user_data) 
-    
-    if not token:
-        raise HTTPException(400, "Невірний логін чи пароль")
-    return token
