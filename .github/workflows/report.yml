@@ -2,7 +2,7 @@ name: Report test results to Telegram
 
 on:
   workflow_run:
-    workflows: ["ci"]  
+    workflows: ["FastAPI + Postgres CI"]  
     types:
       - completed
 
