@@ -4,19 +4,17 @@ from sqlalchemy import Column, Integer, ForeignKey, DateTime, String, Enum, Bool
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
-class tickets(Base):
-    __tablename__ = 'tickets'
+from src.mixin_models import CreatedAtMixin
 
-    id = Column(Integer, primary_key=True, index = True)
-    event_id = Column(Integer, ForeignKey('events.id', ondelete="CASCADE"))
-    owner_id = Column(Integer, ForeignKey('users.id', nullable=False))
 
-    ticket_type = Column(String, default="Standart", nullable=False)
-    price = Column(Integer, nullable=False)
-    status = Column(String, default='reserved')
-    is_used = Column(Boolean, default=False, nullable=False)
+class TicketsORM(Base, CreatedAtMixin):
+    __tablename__ = "tickets"
+    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    event_id: Mapped[int] = mapped_column(ForeignKey("events.id", ondelete="CASCADE"))
+    ticket_type: Mapped[str] = mapped_column(default="Standart")
+    price: Mapped[int]
+    status: Mapped[str] = mapped_column(default="reserved")
+    is_used: Mapped[bool] = mapped_column(default=False)
 
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    event = relationship("Event", back_populates="tickets")
-    owner = relationship("User", back_populates="tickets")
+    event = relationship("EventORM", back_populates="tickets")
+    owner = relationship("UserORM", back_populates="tickets")

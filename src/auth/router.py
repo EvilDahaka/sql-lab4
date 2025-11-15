@@ -4,20 +4,23 @@ from src.auth.exceptions import InvalidRefreshToken, RegistrationError, LoginErr
 from src.auth.schemas import UserRegister, UserLogin, TokenSchemas, LoginResponce
 from src.auth.dependencies import AuthServiceDep
 
-router = APIRouter(prefix="/auth",tags=['Auth']) 
+router = APIRouter(prefix="/auth", tags=["Auth"])
 
-def check_invalid_refresh_token(func): 
-    @wraps(func) 
-    async def wrapper(*args, **kwargs): 
-        try: 
-            result = await func(*args, **kwargs) 
-        except InvalidRefreshToken: 
-            raise HTTPException(status_code=403, detail="Invalid refresh token.") 
-        return result 
+
+def check_invalid_refresh_token(func):
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        try:
+            result = await func(*args, **kwargs)
+        except InvalidRefreshToken:
+            raise HTTPException(status_code=403, detail="Invalid refresh token.")
+        return result
+
     return wrapper
 
+
 @router.post("/register")
-async def register_user(data: UserRegister, service: AuthServiceDep)-> LoginResponce:
+async def register_user(data: UserRegister, service: AuthServiceDep) -> LoginResponce:
     try:
         user = await service.register(data)
     except RegistrationError:
@@ -46,5 +49,4 @@ async def refresh_token(refresh_token: str, service: AuthServiceDep) -> TokenSch
 @router.post("/logout")
 @check_invalid_refresh_token
 async def logout(refresh_token: str, service: AuthServiceDep):
-    await service.logout(refresh_token)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return await service.logout(refresh_token)
