@@ -13,6 +13,7 @@ class tickets(Base):
 
     ticket_type = Column(String, default="Standart", nullable=False)
     price = Column(Integer, nullable=False)
+    status = Column(String, default='reserved')
     is_used = Column(Boolean, default=False, nullable=False)
 
     created_at = Column(DateTime, default=datetime.utcnow)
