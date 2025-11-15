@@ -32,7 +32,7 @@ class EventService:
         """Повертає одну подію за її ID."""
 
         async with self.uow as work:
-            event_orm = await work.events.find_one(id=eq(event_id))
+            event_orm = await work.events.find(id=eq(event_id))
 
             if not event_orm:
                 raise EventNotFoundError(f"Подію з ID {event_id} не знайдено.")
@@ -53,7 +53,7 @@ class EventService:
         """Оновлює дані події після перевірки прав доступу."""
 
         async with self.uow as work:
-            event_orm = await work.events.find_one(id=eq(event_id))
+            event_orm = await work.events.find(id=eq(event_id))
 
             if not event_orm:
                 raise EventNotFoundError(f"Подію з ID {event_id} не знайдено.")
@@ -77,7 +77,7 @@ class EventService:
         """Видаляє подію після перевірки прав доступу."""
 
         async with self.uow as work:
-            event_orm = await work.events.find_one(id=eq(event_id))
+            event_orm = await work.events.find(id=eq(event_id))
 
             if not event_orm:
                 raise EventNotFoundError(f"Подію з ID {event_id} не знайдено.")
@@ -86,8 +86,8 @@ class EventService:
             if event_orm.owner_id != current_user_id:
                 raise EventPermissionError("Ви можете видаляти лише власні події.")
 
-            rows_deleted = await work.events.delete(_id=event_id)
+            deleted = await work.events.delete(_id=event_id)
 
             await work.commit()
 
-            return rows_deleted > 0
+            return EventResponse.model_validate(deleted)

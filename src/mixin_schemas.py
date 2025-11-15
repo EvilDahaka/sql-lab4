@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 
 
 class CreatedAtMixin(BaseModel):
-    create_at: datetime
+    created_at: datetime
 
 
 class Pagination(BaseModel):

@@ -1,27 +1,39 @@
 from typing import Annotated
-from fastapi import Depends,HTTPException
+from fastapi import Depends, HTTPException
 from src.auth.exceptions import AuthenticationError
 from src.auth.interface import IAuthService
 from src.auth.schemas import TokenInfo
 from src.auth.service import get_user_servise
-from fastapi.security import HTTPBearer,HTTPAuthorizationCredentials
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
 AuthServiceDep = Annotated[IAuthService, Depends(get_user_servise)]
 
 bearer = HTTPBearer()
 
-def get_auth(service:AuthServiceDep,creds:HTTPAuthorizationCredentials=Depends(bearer)):
+
+def get_auth(
+    service: AuthServiceDep, creds: HTTPAuthorizationCredentials = Depends(bearer)
+):
     try:
         token = creds.credentials
-        return service.auth(token)
+        token_info = service.auth(token)
+        if token is None:
+            raise AuthenticationError("Not token info")
+        return token_info
     except AuthenticationError:
-        raise HTTPException(403,detail="Auth not user")
+        raise HTTPException(403, detail="Auth not user")
 
-AuthUser = Annotated[TokenInfo,Depends(get_auth)]
+
+AuthUser = Annotated[TokenInfo, Depends(get_auth)]
+
 
 def get_admin(user: AuthUser) -> TokenInfo:
+    if user is None:
+        raise HTTPException(status_code=403, detail="Invalid Token")
     if not user.is_admin:
         raise HTTPException(status_code=403, detail="Only admin")
 
     return user
-        
-AuthAdmin = Annotated[TokenInfo,Depends(get_admin)]
+
+
+AuthAdmin = Annotated[TokenInfo, Depends(get_admin)]

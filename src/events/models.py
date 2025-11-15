@@ -19,7 +19,8 @@ class EventORM(Base, CreatedAtMixin):
     title: Mapped[str]
     description: Mapped[str | None]
     location: Mapped[str]
-    date_time: Mapped[datetime]
+    start_time: Mapped[datetime]
+    end_time: Mapped[datetime]
 
     owner: Mapped["UserORM"] = relationship(back_populates="events")
     tickets: Mapped[list["TicketsORM"]] = relationship(

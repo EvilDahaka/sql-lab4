@@ -1,9 +1,9 @@
 from typing import List
 from fastapi import APIRouter, status, Depends, HTTPException
 from .schemas import EventCreate, EventResponse, EventUpdate
-from .service import EventService 
-from .exceptions import EventNotFoundError, EventPermissionError 
-from .dependencies import EventServiceDep 
+from .service import EventService
+from .exceptions import EventNotFoundError, EventPermissionError
+from .dependencies import EventServiceDep
 from src.auth.dependencies import AuthAdmin
 
 
@@ -12,26 +12,29 @@ router = APIRouter(
     tags=["Events"],
 )
 
+
 @router.post(
     "/",
     response_model=EventResponse,
     status_code=status.HTTP_201_CREATED,
-    summary= "Create event (потрібна авторизація)",
+    summary="Create event (потрібна авторизація)",
 )
 async def create_event(
     event_data: EventCreate,
     # ВИПРАВЛЕНО: Видалено '= Depends()'
-    event_service: EventServiceDep, 
-    current_user: AuthAdmin):
+    event_service: EventServiceDep,
+    current_user: AuthAdmin,
+):
 
     # ВИПРАВЛЕНО: Змінено метод з 'create' на 'create_event' (як у service.py)
     new_event = await event_service.create_event(event_data, current_user.sub)
     return new_event
 
+
 @router.get(
     "/{event_id}",
     response_model=EventResponse,
-    summary= "Get event by id (потрібна авторизація)",
+    summary="Get event by id (потрібна авторизація)",
 )
 async def get_event(
     event_id: int,
@@ -45,7 +48,7 @@ async def get_event(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(e),
         )
-    
+
 
 @router.get(
     "/",
@@ -77,9 +80,7 @@ async def update_event(
     """
     try:
         return await service.update_event(
-            event_id=event_id,
-            update_data=update_data,
-            current_user_id=current_user.sub
+            event_id=event_id, update_data=update_data, current_user_id=current_user.sub
         )
     except EventNotFoundError as e:
         raise HTTPException(
@@ -93,9 +94,9 @@ async def update_event(
             detail=str(e),
         )
 
+
 @router.delete(
     "/{event_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
     summary="Видалити подію (потрібна авторизація та права власника)",
 )
 async def delete_event(
@@ -108,9 +109,8 @@ async def delete_event(
     Видаляє подію. Дозволено лише власнику події.
     """
     try:
-        await service.delete_event(
-            event_id=event_id,
-            current_user_id=current_user.sub
+        return await service.delete_event(
+            event_id=event_id, current_user_id=current_user.sub
         )
     except EventNotFoundError as e:
         raise HTTPException(
@@ -122,6 +122,3 @@ async def delete_event(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=str(e),
         )
-
-    # При успішному видаленні повертаємо 204 No Content
-    return
